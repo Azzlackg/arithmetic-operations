@@ -1,0 +1,125 @@
+import random
+from tkinter import *
+
+
+class MathQuiz:
+    def __init__(self, master):
+        self.master = master
+        master.title("小学四则运算自动生成程序")
+
+        # 设置题目数量
+        self.num_problems = IntVar()
+        self.num_problems.set(10)
+        Label(master, text="题目数量：").grid(row=0, column=0)
+        Entry(master, textvariable=self.num_problems).grid(row=0, column=1)
+
+        # 设置最大数
+        self.max_num = IntVar()
+        self.max_num.set(100)
+        Label(master, text="最大数：").grid(row=1, column=0)
+        Entry(master, textvariable=self.max_num).grid(row=1, column=1)
+
+        # 设置是否有括号
+        self.has_parentheses = BooleanVar()
+        self.has_parentheses.set(False)
+        Checkbutton(master, text="有括号", variable=self.has_parentheses).grid(row=2, column=0)
+
+        # 设置是否有小数
+        self.has_decimal = BooleanVar()
+        self.has_decimal.set(False)
+        Checkbutton(master, text="有小数", variable=self.has_decimal).grid(row=2, column=1)
+
+        # 设置运算符
+        self.addition = BooleanVar()
+        self.addition.set(True)
+        Checkbutton(master, text="+", variable=self.addition).grid(row=3, column=0)
+        self.subtraction = BooleanVar()
+        self.subtraction.set(True)
+        Checkbutton(master, text="-", variable=self.subtraction).grid(row=3, column=1)
+        self.multiplication = BooleanVar()
+        self.multiplication.set(True)
+        Checkbutton(master, text="×", variable=self.multiplication).grid(row=4, column=0)
+        self.division = BooleanVar()
+        self.division.set(True)
+        Checkbutton(master, text="÷", variable=self.division).grid(row=4, column=1)
+
+        # 设置输出方式
+        self.output_type = StringVar()
+        self.output_type.set("print")
+        Label(master, text="输出方式：").grid(row=5, column=0)
+        Radiobutton(master, text="打印", variable=self.output_type, value="print").grid(row=6, column=0)
+        Radiobutton(master, text="输出到文件", variable=self.output_type, value="file").grid(row=6, column=1)
+
+        # 创建"生成题目"按钮
+        Button(master, text="生成题目", command=self.generate_problems).grid(row=7, column=0, columnspan=2)
+
+        # 显示题目
+        self.problems_text = Text(master, height=20, width=50)
+        self.problems_text.grid(row=8, column=0, columnspan=2)
+
+    def generate_problems(self):
+        # 获取设置值
+        num_problems = self.num_problems.get()
+        max_num = self.max_num.get()
+        has_parentheses = self.has_parentheses.get()
+        has_decimal = self.has_decimal.get()
+        addition = self.addition.get()
+        subtraction = self.subtraction.get()
+        multiplication = self.multiplication.get()
+        division = self.division.get()
+        output_type = self.output_type.get()
+
+        # 生成题目
+        problems = []
+        operators = ""
+        if addition:
+            operators += "+"
+        if subtraction:
+           
+            operators += "-"
+        if multiplication:
+            operators += "×"
+        if division:
+            operators += "÷"
+
+        for i in range(num_problems):
+            # 生成表达式
+            expr = ""
+            num1 = random.randint(1, max_num)
+            num2 = random.randint(1, max_num)
+            operator = random.choice(operators)
+            if operator == "+":
+                result = num1 + num2
+            elif operator == "-":
+                num1, num2 = max(num1, num2), min(num1, num2)
+                result = num1 - num2
+            elif operator == "×":
+                result = num1 * num2
+            else:
+                num1, num2 = max(num1, num2), min(num1, num2)
+                num1 = num2 * random.randint(1, max_num)
+                result = num1 / num2
+
+            expr += str(num1) + " " + operator + " " + str(num2)
+            if has_decimal:
+                if random.random() < 0.5:
+                    expr += " + " + str(random.random() * 10)[:4]
+                else:
+                    expr += " - " + str(random.random() * 10)[:4]
+            if has_parentheses:
+                if random.random() < 0.5:
+                    expr = "(" + expr + ")"
+            expr += " = "
+
+            # 添加到题目列表
+            problems.append(expr)
+
+        # 输出题目
+        if output_type == "print":
+            self.problems_text.delete('1.0', END)
+            self.problems_text.insert(END, '\n'.join(problems))
+        else:
+            with open("math_problems.txt", "w") as f:
+                f.write('\n'.join(problems))
+                self.problems_text.delete('1.0', END)
+                self.problems_text.insert(END, "题目已保存到文件：math_problems.txt")
